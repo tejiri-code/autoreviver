@@ -31,6 +31,7 @@ interface Listing {
   condition?: string;
   trust_score?: number;
   fitment?: Fitment | null;
+  image_url?: string;
   seller_name?: string;
   location?: string;
   compatible_range?: string;
@@ -45,8 +46,20 @@ function compatClass(confidence: number) {
 
 function BuyerContent() {
   const searchParams = useSearchParams();
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [query, setQuery] = useState("");
+  const initialQuery = searchParams.get("q") ?? "";
+  const initialVehicle = (() => {
+    const make = searchParams.get("make") ?? "";
+    const model = searchParams.get("model") ?? "";
+    const year = searchParams.get("year");
+    const fuel = searchParams.get("fuel") ?? "Any";
+
+    return make && model
+      ? { make, model, year: year ? Number(year) : null, fuel_type: fuel }
+      : null;
+  })();
+
+  const [vehicle, setVehicle] = useState<Vehicle | null>(initialVehicle);
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<Listing[]>([]);
   const [intent, setIntent] = useState<SearchIntent | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,20 +84,11 @@ function BuyerContent() {
     if (didInit.current) return;
     didInit.current = true;
 
-    const q = searchParams.get("q") ?? "";
-    const make = searchParams.get("make") ?? "";
-    const model = searchParams.get("model") ?? "";
-    const year = searchParams.get("year");
-    const fuel = searchParams.get("fuel") ?? "Any";
-
-    let v: Vehicle | null = null;
-    if (make && model) {
-      v = { make, model, year: year ? Number(year) : null, fuel_type: fuel };
-      setVehicle(v);
+    if (initialQuery || initialVehicle) {
+      const timer = window.setTimeout(() => doSearch(initialQuery, initialVehicle), 0);
+      return () => window.clearTimeout(timer);
     }
-    if (q) setQuery(q);
-    if (q || (make && model)) doSearch(q, v);
-  }, [searchParams]);
+  }, [initialQuery, initialVehicle]);
 
   const handleSearch = () => {
     if (!query.trim()) return;
@@ -100,7 +104,10 @@ function BuyerContent() {
     <main className="min-h-screen bg-gray-950 text-white">
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="font-bold text-lg tracking-tight">AutoReviver</Link>
-        <Link href="/seller" className="text-sm text-gray-400 hover:text-white transition">Sell a Part</Link>
+        <div className="flex gap-4 text-sm">
+          <Link href="/chat" className="text-gray-400 hover:text-white transition">AI Chat</Link>
+          <Link href="/seller" className="text-gray-400 hover:text-white transition">Sell a Part</Link>
+        </div>
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
@@ -207,9 +214,12 @@ function ResultCard({ item }: { item: Listing }) {
     <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
       <div className="p-5">
         <div className="flex items-start gap-4">
-          {/* Part image placeholder */}
-          <div className="shrink-0 w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center text-gray-600 text-2xl select-none">
-            ⚙
+          <div
+            className="shrink-0 w-20 h-20 rounded-lg border border-gray-700 bg-gray-800 bg-cover bg-center flex items-center justify-center text-gray-600 text-2xl select-none"
+            style={item.image_url ? { backgroundImage: `url(${item.image_url})` } : undefined}
+            aria-label={item.image_url ? `${item.title || "Part"} image` : "No part image available"}
+          >
+            {!item.image_url && "⚙"}
           </div>
 
           <div className="flex-1 min-w-0">

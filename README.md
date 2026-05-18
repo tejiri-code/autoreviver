@@ -16,7 +16,7 @@ AutoReviver combines structured fitment matching, AI-generated listings, semanti
 
 - **Part Compatibility Verification** — deterministic fitment engine with confidence scoring and buyer-readable explanations
 - **Smart Listing Generation** — upload a photo + part number → AI generates title, description, compatibility list, condition assessment, and price suggestion
-- **Intelligent Search** — natural language → structured intent → semantic vector search
+- **Intelligent Search** — natural language chatbot → structured intent → semantic vector search → fitment-aware recommendations
 - **Trust & Anti-Scam** — perceptual image hashing (pHash/dHash/aHash) detects duplicate photos and stolen images; seller reputation scoring
 
 ## Sub-Challenge Coverage
@@ -31,7 +31,7 @@ Sellers can upload a part photo, part number, and donor vehicle. The AI service 
 
 ### Intelligent Search & Discovery
 
-Buyers can search in natural language, such as "left headlight for Ford Fiesta". The AI service extracts structured intent, embeds the query with `sentence-transformers`, searches ChromaDB for semantic matches, and returns inventory results enriched with fitment analysis. If the vector store is empty or unavailable, the Node API falls back to deterministic database search so discovery still works during demos.
+Buyers can search or chat in natural language, such as "left headlight for Ford Fiesta". The AI service extracts structured intent, embeds the query with `sentence-transformers`, searches ChromaDB for semantic matches, and returns inventory results enriched with fitment analysis. The `/chat` experience turns those results into a conversational recommendation with next-step suggestions. If the vector store is empty or unavailable, the Node API falls back to deterministic database search so discovery still works during demos.
 
 ### Trust & Anti-Scam Features
 
@@ -129,6 +129,7 @@ npm run dev
 | Frontend | http://localhost:3000 |
 | Node API | http://localhost:4000 |
 | FastAPI docs | http://localhost:8000/docs |
+| AI Chatbot | http://localhost:3000/chat |
 
 ## Demo Scenarios
 
@@ -136,6 +137,7 @@ npm run dev
 2. **Wrong-part prevention** — VW Golf buyer searching for a Ford Focus bumper sees "Incompatible" badge
 3. **Seller listing automation** — upload a headlight photo → AI generates full professional listing in seconds
 4. **Suspicious listing flagged** — duplicate/stolen image detected, low trust score displayed
+5. **AI chatbot discovery** — open `/chat`, select a vehicle, ask "I need a left headlight", and receive fitment-scored recommendations
 
 ## Vehicle Data Strategy
 
@@ -149,6 +151,15 @@ npm run dev
 - HuggingFace Inference API (free tier)
 - imagehash (Python, local)
 - sentence-transformers (local, no API)
+
+## Demo Image Sources
+
+Seeded listing images are loaded from Wikimedia Commons for demo/testing:
+
+- Ford Fiesta image: [Ford Fiesta MK6 144349](https://commons.wikimedia.org/wiki/File:Ford_Fiesta_MK6_144349.jpg)
+- Brake caliper image: [Brake calipers](https://commons.wikimedia.org/wiki/File:Brake_calipers.jpg)
+- Front bumper image: [Front bumper oldtimer car](https://commons.wikimedia.org/wiki/File:Front_bumper_oldtimer_car.jpg)
+- Damaged/unknown headlight image: [Close-up of damaged headlight and grill on automobile](https://commons.wikimedia.org/wiki/File:Close-up_of_damaged_headlight_and_grill_on_automobile.jpg)
 
 ## Ethical Design
 

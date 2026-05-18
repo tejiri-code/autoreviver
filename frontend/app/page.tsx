@@ -32,6 +32,7 @@ export default function Home() {
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <span className="font-bold text-lg tracking-tight">AutoReviver</span>
         <div className="flex gap-4 text-sm">
+          <Link href="/chat" className="text-gray-400 hover:text-white transition">AI Chat</Link>
           <Link href="/buyer" className="text-gray-400 hover:text-white transition">Find Parts</Link>
           <Link href="/seller" className="text-gray-400 hover:text-white transition">Sell a Part</Link>
         </div>
@@ -103,6 +104,7 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-x-8 gap-y-2">
             {[
               "Compatibility confidence score on every result",
+              "Conversational AI chatbot for part discovery",
               "AI-powered natural language part search",
               "Seller trust scoring built in",
               "Works without DVLA lookup — manual fallback",

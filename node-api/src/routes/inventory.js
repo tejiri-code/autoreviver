@@ -88,6 +88,70 @@ async function enrichWithFitment(listings, vehicle, intent) {
   );
 }
 
+async function searchInventory(query, vehicle = {}) {
+  let intent;
+  let listings;
+
+  try {
+    const searchResp = await axios.post(`${AI_URL}/search/semantic`, { query, vehicle });
+    const { intent: aiIntent, results } = searchResp.data;
+    intent = aiIntent || localIntent(query);
+
+    const ids = results.map((r) => r.listing_id).filter(Boolean);
+    if (!ids.length) throw new Error("No semantic results");
+
+    listings = await Inventory.find({ _id: { $in: ids }, status: "active" });
+    if (!listings.length) throw new Error("Semantic results not found in inventory");
+  } catch {
+    try {
+      const intentResp = await axios.post(`${AI_URL}/search/intent`, { query });
+      intent = intentResp.data || localIntent(query);
+    } catch {
+      intent = localIntent(query);
+    }
+    listings = await Inventory.find(buildInventoryFilter(intent, query)).limit(20).sort({ listing_score: -1, created_at: -1 });
+  }
+
+  const enriched = await enrichWithFitment(listings, vehicle, intent);
+  return { intent, results: enriched, query };
+}
+
+function buildChatReply({ query, vehicle, results }) {
+  const hasVehicle = vehicle && Object.keys(vehicle).length > 0;
+  const best = results[0];
+
+  if (!results.length) {
+    return hasVehicle
+      ? `I could not find an exact match for "${query}". Try a simpler part name, like "left headlight", or broaden the vehicle details.`
+      : `I could not find an exact match for "${query}". Tell me the vehicle make, model and year so I can check fitment properly.`;
+  }
+
+  const verified = results.filter((item) => item.fitment?.fitment_status === "verified_fit");
+  const bestFit = best.fitment;
+  const confidence = bestFit ? Math.round(bestFit.confidence * 100) : null;
+
+  if (verified.length) {
+    const top = verified[0];
+    const topConfidence = Math.round((top.fitment?.confidence ?? 0) * 100);
+    return `I found ${verified.length} verified fit ${verified.length === 1 ? "match" : "matches"}. Best option: ${top.title} at £${top.price ?? "TBC"} with ${topConfidence}% fitment confidence.`;
+  }
+
+  if (confidence !== null) {
+    return `I found ${results.length} possible ${results.length === 1 ? "match" : "matches"}, but none are verified fits yet. Closest option: ${best.title} at £${best.price ?? "TBC"} with ${confidence}% confidence. Check the warnings before buying.`;
+  }
+
+  return `I found ${results.length} possible ${results.length === 1 ? "listing" : "listings"}. Best option: ${best.title} at £${best.price ?? "TBC"}. Add vehicle details for a fitment confidence score.`;
+}
+
+function buildChatSuggestions(intent, results) {
+  const suggestions = [];
+  if (!intent?.make && !intent?.model) suggestions.push("Add your vehicle make, model and year for fitment scoring.");
+  if (intent?.part_category && !intent?.side) suggestions.push(`Specify side or position, for example "left ${intent.part_category}" or "front ${intent.part_category}".`);
+  if (results.some((item) => item.safety_warnings?.length)) suggestions.push("Safety-critical or uncertain parts should be checked by a qualified mechanic before fitting.");
+  if (!suggestions.length) suggestions.push("Open the top result and review compatibility reasons before buying.");
+  return suggestions.slice(0, 3);
+}
+
 // GET all listings (with optional filters)
 router.get("/", async (req, res) => {
   const { make, model, part_category, side, status = "active" } = req.query;
@@ -175,34 +239,33 @@ router.post("/generate", upload.single("image"), async (req, res) => {
 router.post("/search", async (req, res) => {
   try {
     const { query, vehicle } = req.body;
-    let intent;
-    let listings;
-
-    try {
-      const searchResp = await axios.post(`${AI_URL}/search/semantic`, { query, vehicle });
-      const { intent: aiIntent, results } = searchResp.data;
-      intent = aiIntent || localIntent(query);
-
-      const ids = results.map((r) => r.listing_id).filter(Boolean);
-      if (!ids.length) throw new Error("No semantic results");
-
-      listings = await Inventory.find({ _id: { $in: ids }, status: "active" });
-      if (!listings.length) throw new Error("Semantic results not found in inventory");
-    } catch {
-      try {
-        const intentResp = await axios.post(`${AI_URL}/search/intent`, { query });
-        intent = intentResp.data || localIntent(query);
-      } catch {
-        intent = localIntent(query);
-      }
-      listings = await Inventory.find(buildInventoryFilter(intent, query)).limit(20).sort({ listing_score: -1, created_at: -1 });
-    }
-
-    const enriched = await enrichWithFitment(listings, vehicle, intent);
-
-    res.json({ intent, results: enriched, query });
+    res.json(await searchInventory(query, vehicle));
   } catch (err) {
     res.status(500).json({ error: "Search failed", detail: err.message });
+  }
+});
+
+// POST conversational assistant for buyer discovery
+router.post("/chat", async (req, res) => {
+  try {
+    const { message, vehicle = {}, history = [] } = req.body;
+    const query = String(message || "").trim();
+    if (!query) return res.status(400).json({ error: "message required" });
+
+    const search = await searchInventory(query, vehicle);
+    const results = search.results.slice(0, 5);
+    const reply = buildChatReply({ query, vehicle, results });
+    const suggestions = buildChatSuggestions(search.intent, results);
+
+    res.json({
+      reply,
+      intent: search.intent,
+      results,
+      suggestions,
+      history_length: Array.isArray(history) ? history.length : 0,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Chat failed", detail: err.message });
   }
 });
 

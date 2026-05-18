@@ -20,6 +20,16 @@ export async function searchParts(query: string, vehicle: object) {
   return res.json();
 }
 
+export async function chatParts(message: string, vehicle: object, history: object[] = []) {
+  const res = await fetch(`${BASE}/inventory/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, vehicle, history }),
+  });
+  if (!res.ok) throw new Error("Chat failed");
+  return res.json();
+}
+
 export async function generateListing(formData: FormData) {
   const res = await fetch(`${BASE}/inventory/generate`, {
     method: "POST",
