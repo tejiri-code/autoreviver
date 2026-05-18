@@ -1,0 +1,200 @@
+[
+  {
+    "make": "Ford",
+    "model": "Fiesta",
+    "generic_model": "FIESTA",
+    "body_type": "Cars",
+    "years": [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Any"],
+    "engine_sizes": ["1.0L", "1.2L", "1.4L", "1.5L", "1.6L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Ford_Fiesta_MK6_144349.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Ford",
+    "model": "Focus",
+    "generic_model": "FOCUS",
+    "body_type": "Cars",
+    "years": [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020],
+    "fuels": ["Petrol", "Diesel", "Electric", "Any"],
+    "engine_sizes": ["1.0L", "1.5L", "1.6L", "2.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/2011_Ford_Focus_Zetec_1.6_Front.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "generic_model": "GOLF",
+    "body_type": "Cars",
+    "years": [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Electric", "Any"],
+    "engine_sizes": ["1.0L", "1.4L", "1.5L", "1.6L", "2.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/VW_Golf_VII_1.4_TSI_Highline.JPG?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Polo",
+    "generic_model": "POLO",
+    "body_type": "Cars",
+    "years": [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.0L", "1.2L", "1.4L", "1.6L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Volkswagen_Polo_1.2_Comfortline_(V)_-_Frontansicht,_1._Mai_2012,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Vauxhall",
+    "model": "Corsa",
+    "generic_model": "CORSA",
+    "body_type": "Cars",
+    "years": [2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.0L", "1.2L", "1.3L", "1.4L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Opel_Corsa_1.4_ecoFLEX_120_Years_(E)_-_Frontansicht,_17._M%C3%A4rz_2019,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Vauxhall",
+    "model": "Astra",
+    "generic_model": "ASTRA",
+    "body_type": "Cars",
+    "years": [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.4L", "1.6L", "1.7L", "2.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Opel_Astra_1.6_CDTI_Innovation_(K)_%E2%80%93_Frontansicht,_13._M%C3%A4rz_2016,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "BMW",
+    "model": "3 Series",
+    "generic_model": "3 SERIES",
+    "body_type": "Cars",
+    "years": [2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Any"],
+    "engine_sizes": ["1.6L", "2.0L", "3.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/BMW_320d_Sport_Line_(F30)_%E2%80%93_Frontansicht,_3._M%C3%A4rz_2012,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "BMW",
+    "model": "5 Series",
+    "generic_model": "5 SERIES",
+    "body_type": "Cars",
+    "years": [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Any"],
+    "engine_sizes": ["2.0L", "3.0L", "4.4L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/BMW_520d_Luxury_Line_(F10)_Facelift_%E2%80%93_Frontansicht,_30._Dezember_2013,_M%C3%BCnster.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Nissan",
+    "model": "Qashqai",
+    "generic_model": "QASHQAI",
+    "body_type": "Cars",
+    "years": [2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.2L", "1.5L", "1.6L", "2.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Nissan_Qashqai_dCi_130_Tekna_(J11)_%E2%80%93_Frontansicht,_14._Juni_2014,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Toyota",
+    "model": "Yaris",
+    "generic_model": "YARIS",
+    "body_type": "Cars",
+    "years": [2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Any"],
+    "engine_sizes": ["1.0L", "1.3L", "1.4L", "1.5L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/2017_Toyota_Yaris_Icon_VVT-i_1.5_Front.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Audi",
+    "model": "A3",
+    "generic_model": "A3",
+    "body_type": "Cars",
+    "years": [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Any"],
+    "engine_sizes": ["1.4L", "1.6L", "2.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Audi_A3_Sportback_1.4_TFSI_Ambition_(8V)_%E2%80%93_Frontansicht,_10._August_2013,_M%C3%BCnster.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Audi",
+    "model": "A4",
+    "generic_model": "A4",
+    "body_type": "Cars",
+    "years": [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.8L", "2.0L", "3.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Audi_A4_Avant_2.0_TDI_Sport_(B9)_%E2%80%93_Frontansicht,_8._August_2015,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "MINI",
+    "model": "Hatch",
+    "generic_model": "HATCH",
+    "body_type": "Cars",
+    "years": [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018],
+    "fuels": ["Petrol", "Diesel", "Electric", "Any"],
+    "engine_sizes": ["1.4L", "1.5L", "1.6L", "2.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/2014_MINI_Cooper_1.5_Front.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "generic_model": "C CLASS",
+    "body_type": "Cars",
+    "years": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Any"],
+    "engine_sizes": ["1.6L", "2.0L", "2.1L", "3.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Mercedes-Benz_C_220_BlueTEC_T-Modell_(S_205)_%E2%80%93_Frontansicht,_3._Januar_2015,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Seat",
+    "model": "Ibiza",
+    "generic_model": "IBIZA",
+    "body_type": "Cars",
+    "years": [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.0L", "1.2L", "1.4L", "1.6L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Ibiza_1.4_16V_Style_(6J)_%E2%80%93_Frontansicht,_3._Mai_2011,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Skoda",
+    "model": "Octavia",
+    "generic_model": "OCTAVIA",
+    "body_type": "Cars",
+    "years": [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Hybrid", "Any"],
+    "engine_sizes": ["1.0L", "1.4L", "1.6L", "2.0L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Skoda_Octavia_III_Combi_1.6_TDI_GreenLine_%E2%80%93_Frontansicht,_8._Juni_2014,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Hyundai",
+    "model": "i20",
+    "generic_model": "I20",
+    "body_type": "Cars",
+    "years": [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.0L", "1.2L", "1.4L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Hyundai_i20_1.4_CRDi_Style_(II)_%E2%80%93_Frontansicht,_25._Juli_2015,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  },
+  {
+    "make": "Kia",
+    "model": "Ceed",
+    "generic_model": "CEED",
+    "body_type": "Cars",
+    "years": [2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
+    "fuels": ["Petrol", "Diesel", "Any"],
+    "engine_sizes": ["1.0L", "1.4L", "1.6L", "Any"],
+    "vehicle_card_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Kia_cee'd_1.6_CRDi_Spirit_(JD)_%E2%80%93_Frontansicht,_18._Mai_2013,_D%C3%BCsseldorf.jpg?width=640",
+    "source": "GOV.UK VEH0120/VEH0124 selector sample"
+  }
+]

@@ -4,6 +4,7 @@ const fs = require("fs");
 const multer = require("multer");
 const FormData = require("form-data");
 const { Inventory, Seller } = require("../db/models");
+const vehicles = require("../../../data/uk_vehicle_selector.json");
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 const isDocker = fs.existsSync("/.dockerenv");
@@ -25,13 +26,60 @@ function localIntent(query = "") {
     offside: "right",
     nearside: "left",
   };
-  const makes = ["ford", "vw", "volkswagen", "vauxhall", "bmw", "audi", "toyota", "nissan", "honda", "mercedes", "mini", "seat", "skoda", "hyundai", "kia"];
-  const parts = ["headlight", "bumper", "wing mirror", "door", "bonnet", "caliper", "alternator", "radiator", "starter", "seat", "wheel", "tyre", "sensor"];
+  const makeAliases = new Map([
+    ["vw", "Volkswagen"],
+    ["volkswagen", "Volkswagen"],
+    ["mercedes", "Mercedes-Benz"],
+    ["mercedes-benz", "Mercedes-Benz"],
+    ...vehicles.map((vehicle) => [vehicle.make.toLowerCase(), vehicle.make]),
+  ]);
+  const parts = [
+    ["headlight", "headlight"],
+    ["headlamp", "headlight"],
+    ["rear light", "rear light"],
+    ["tail light", "rear light"],
+    ["front bumper", "bumper"],
+    ["rear bumper", "bumper"],
+    ["bumper", "bumper"],
+    ["wing mirror", "wing mirror"],
+    ["door", "door"],
+    ["bonnet", "bonnet"],
+    ["brake caliper", "caliper"],
+    ["caliper", "caliper"],
+    ["brake disc", "brake disc"],
+    ["alternator", "alternator"],
+    ["radiator", "radiator"],
+    ["starter motor", "starter"],
+    ["starter", "starter"],
+    ["radiator fan", "radiator fan"],
+    ["suspension arm", "suspension arm"],
+    ["control arm", "suspension arm"],
+    ["infotainment screen", "infotainment screen"],
+    ["screen", "infotainment screen"],
+    ["battery cooling fan", "battery"],
+    ["battery", "battery"],
+    ["mirror", "wing mirror"],
+    ["seat", "seat"],
+    ["wheel", "wheel"],
+    ["tyre", "tyre"],
+    ["tire", "tyre"],
+    ["sensor", "sensor"],
+  ];
   const intent = { part_category: null, make: null, model: null, year: null, side: null };
 
-  intent.make = makes.find((make) => q.includes(make)) || null;
-  if (intent.make) intent.make = intent.make === "vw" ? "Volkswagen" : intent.make[0].toUpperCase() + intent.make.slice(1);
-  intent.part_category = parts.find((part) => q.includes(part)) || null;
+  const makeMatch = [...makeAliases.entries()]
+    .sort((a, b) => b[0].length - a[0].length)
+    .find(([alias]) => q.includes(alias));
+  if (makeMatch) intent.make = makeMatch[1];
+
+  const models = vehicles
+    .filter((vehicle) => !intent.make || vehicle.make === intent.make)
+    .map((vehicle) => vehicle.model)
+    .sort((a, b) => b.length - a.length);
+  intent.model = models.find((model) => q.includes(model.toLowerCase())) || null;
+
+  const partMatch = parts.find(([alias]) => q.includes(alias));
+  if (partMatch) intent.part_category = partMatch[1];
 
   const side = Object.keys(sides).find((keyword) => q.includes(keyword));
   if (side) intent.side = sides[side];
@@ -40,6 +88,16 @@ function localIntent(query = "") {
   if (year) intent.year = Number(year[0]);
 
   return intent;
+}
+
+function mergeIntent(primary = {}, fallback = {}) {
+  return {
+    part_category: fallback.part_category || primary.part_category || null,
+    make: fallback.make || primary.make || null,
+    model: fallback.model || primary.model || null,
+    year: fallback.year || primary.year || null,
+    side: fallback.side || primary.side || null,
+  };
 }
 
 function buildInventoryFilter(intent, query) {
@@ -66,18 +124,51 @@ function buildInventoryFilter(intent, query) {
   return filter;
 }
 
+function listingMatchesIntent(listing, intent) {
+  if (intent.part_category && !new RegExp(escapeRegex(intent.part_category), "i").test(listing.part_category || "")) return false;
+  if (intent.make && !new RegExp(escapeRegex(intent.make), "i").test(listing.make || "")) return false;
+  if (intent.model && !new RegExp(escapeRegex(intent.model), "i").test(listing.model || "")) return false;
+  if (intent.side && ![listing.side, listing.position].some((value) => new RegExp(escapeRegex(intent.side), "i").test(value || ""))) return false;
+  if (intent.year && (listing.year_from || listing.year_to)) {
+    if (listing.year_from && intent.year < listing.year_from) return false;
+    if (listing.year_to && intent.year > listing.year_to) return false;
+  }
+  return true;
+}
+
+function inferVehicle(vehicle, intent) {
+  if (vehicle && Object.keys(vehicle).length > 0) return vehicle;
+  if (!intent?.make && !intent?.model && !intent?.year) return {};
+
+  const matched = vehicles.find((candidate) => {
+    if (intent.make && candidate.make !== intent.make) return false;
+    if (intent.model && candidate.model !== intent.model) return false;
+    if (intent.year && !candidate.years.includes(intent.year)) return false;
+    return true;
+  });
+
+  if (!matched) return {};
+  return {
+    make: matched.make,
+    model: matched.model,
+    year: intent.year || null,
+    fuel_type: "Any",
+  };
+}
+
 async function enrichWithFitment(listings, vehicle, intent) {
   const intentValues = Object.fromEntries(
     Object.entries(intent || {}).filter(([, value]) => value !== null && value !== undefined && value !== "")
   );
+  const effectiveVehicle = inferVehicle(vehicle, intent);
 
   return Promise.all(
     listings.map(async (listing) => {
       let fitment = null;
-      if (vehicle && Object.keys(vehicle).length > 0) {
+      if (effectiveVehicle && Object.keys(effectiveVehicle).length > 0) {
         try {
           const fitResp = await axios.post(`${AI_URL}/fitment/check`, {
-            buyer_vehicle: { ...vehicle, ...intentValues },
+            buyer_vehicle: { ...effectiveVehicle, ...intentValues },
             part_listing: listing.toObject(),
           });
           fitment = fitResp.data;
@@ -91,36 +182,48 @@ async function enrichWithFitment(listings, vehicle, intent) {
 async function searchInventory(query, vehicle = {}) {
   let intent;
   let listings;
+  const parsedIntent = localIntent(query);
 
   try {
     const searchResp = await axios.post(`${AI_URL}/search/semantic`, { query, vehicle });
     const { intent: aiIntent, results } = searchResp.data;
-    intent = aiIntent || localIntent(query);
+    intent = mergeIntent(aiIntent, parsedIntent);
 
     const ids = results.map((r) => r.listing_id).filter(Boolean);
     if (!ids.length) throw new Error("No semantic results");
 
     listings = await Inventory.find({ _id: { $in: ids }, status: "active" });
     if (!listings.length) throw new Error("Semantic results not found in inventory");
+    listings = listings.filter((listing) => listingMatchesIntent(listing, intent));
   } catch {
     try {
       const intentResp = await axios.post(`${AI_URL}/search/intent`, { query });
-      intent = intentResp.data || localIntent(query);
+      intent = mergeIntent(intentResp.data, parsedIntent);
     } catch {
-      intent = localIntent(query);
+      intent = parsedIntent;
     }
-    listings = await Inventory.find(buildInventoryFilter(intent, query)).limit(20).sort({ listing_score: -1, created_at: -1 });
   }
 
+  if (!listings || !listings.length) {
+    listings = await Inventory.find(buildInventoryFilter(intent || parsedIntent, query)).limit(20).sort({ listing_score: -1, created_at: -1 });
+  }
+
+  intent = intent || parsedIntent;
   const enriched = await enrichWithFitment(listings, vehicle, intent);
-  return { intent, results: enriched, query };
+  return { intent, inferred_vehicle: inferVehicle(vehicle, intent), results: enriched, query };
 }
 
-function buildChatReply({ query, vehicle, results }) {
+function buildChatReply({ query, vehicle, intent, results }) {
   const hasVehicle = vehicle && Object.keys(vehicle).length > 0;
+  const understood = [intent?.year, intent?.make, intent?.model, intent?.side, intent?.part_category]
+    .filter(Boolean)
+    .join(" ");
   const best = results[0];
 
   if (!results.length) {
+    if (understood) {
+      return `I understood this as ${understood}, but there are no matching active listings in the current inventory. Try broadening the part name or adding a new seller listing.`;
+    }
     return hasVehicle
       ? `I could not find an exact match for "${query}". Try a simpler part name, like "left headlight", or broaden the vehicle details.`
       : `I could not find an exact match for "${query}". Tell me the vehicle make, model and year so I can check fitment properly.`;
@@ -145,8 +248,18 @@ function buildChatReply({ query, vehicle, results }) {
 
 function buildChatSuggestions(intent, results) {
   const suggestions = [];
-  if (!intent?.make && !intent?.model) suggestions.push("Add your vehicle make, model and year for fitment scoring.");
-  if (intent?.part_category && !intent?.side) suggestions.push(`Specify side or position, for example "left ${intent.part_category}" or "front ${intent.part_category}".`);
+  const sideExamples = {
+    bumper: ["front bumper", "rear bumper"],
+    "wing mirror": ["left wing mirror", "right wing mirror"],
+    headlight: ["left headlight", "right headlight"],
+    caliper: ["front left caliper", "rear right caliper"],
+  };
+
+  if (!intent?.make || !intent?.model || !intent?.year) suggestions.push("Add make, model and year for the strongest fitment check.");
+  if (intent?.part_category && !intent?.side) {
+    const examples = sideExamples[intent.part_category] || [`left ${intent.part_category}`, `front ${intent.part_category}`];
+    suggestions.push(`Specify side or position, for example "${examples[0]}" or "${examples[1]}".`);
+  }
   if (results.some((item) => item.safety_warnings?.length)) suggestions.push("Safety-critical or uncertain parts should be checked by a qualified mechanic before fitting.");
   if (!suggestions.length) suggestions.push("Open the top result and review compatibility reasons before buying.");
   return suggestions.slice(0, 3);
@@ -254,7 +367,7 @@ router.post("/chat", async (req, res) => {
 
     const search = await searchInventory(query, vehicle);
     const results = search.results.slice(0, 5);
-    const reply = buildChatReply({ query, vehicle, results });
+    const reply = buildChatReply({ query, vehicle, intent: search.intent, results });
     const suggestions = buildChatSuggestions(search.intent, results);
 
     res.json({

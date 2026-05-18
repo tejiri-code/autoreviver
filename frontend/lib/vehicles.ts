@@ -1,38 +1,45 @@
-export const VEHICLES: { make: string; model: string; years: number[] }[] = [
-  { make: "Ford", model: "Fiesta", years: [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Ford", model: "Focus", years: [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020] },
-  { make: "Volkswagen", model: "Golf", years: [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020] },
-  { make: "Volkswagen", model: "Polo", years: [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020] },
-  { make: "Vauxhall", model: "Corsa", years: [2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Vauxhall", model: "Astra", years: [2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "BMW", model: "3 Series", years: [2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "BMW", model: "5 Series", years: [2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017] },
-  { make: "Nissan", model: "Qashqai", years: [2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Toyota", model: "Yaris", years: [2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Audi", model: "A3", years: [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Audi", model: "A4", years: [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018] },
-  { make: "MINI", model: "Hatch", years: [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018] },
-  { make: "Mercedes-Benz", model: "C-Class", years: [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018] },
-  { make: "Seat", model: "Ibiza", years: [2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Skoda", model: "Octavia", years: [2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Hyundai", model: "i20", years: [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-  { make: "Kia", model: "Ceed", years: [2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019] },
-];
+import vehicleRows from "../../data/uk_vehicle_selector.json";
 
+export interface VehicleOption {
+  make: string;
+  model: string;
+  generic_model: string;
+  body_type: string;
+  years: number[];
+  fuels: string[];
+  engine_sizes: string[];
+  vehicle_card_image: string;
+  source: string;
+}
+
+export const VEHICLES = vehicleRows as VehicleOption[];
 export const MAKES = [...new Set(VEHICLES.map((v) => v.make))].sort();
 
 export function getModels(make: string) {
-  return VEHICLES.filter((v) => v.make === make).map((v) => v.model);
+  return VEHICLES.filter((v) => v.make === make).map((v) => v.model).sort();
 }
 
 export function getYears(make: string, model: string) {
   return VEHICLES.find((v) => v.make === make && v.model === model)?.years ?? [];
 }
 
+export function getFuels(make: string, model: string) {
+  return VEHICLES.find((v) => v.make === make && v.model === model)?.fuels ?? ["Any"];
+}
+
+export function getEngineSizes(make: string, model: string) {
+  return VEHICLES.find((v) => v.make === make && v.model === model)?.engine_sizes ?? ["Any"];
+}
+
+export function getVehicle(make: string, model: string) {
+  return VEHICLES.find((v) => v.make === make && v.model === model);
+}
+
+export const POPULAR_VEHICLES = VEHICLES.slice(0, 6);
+
 export const PART_CATEGORIES = [
   "Headlight", "Rear Light", "Wing Mirror", "Front Bumper", "Rear Bumper",
   "Bonnet", "Door", "Wheel", "Tyre", "Alternator", "Starter Motor",
-  "Radiator", "Brake Caliper", "Brake Disc", "Suspension Arm",
-  "Air Conditioning Compressor", "Battery", "Seat", "Infotainment Screen",
-  "Engine", "Gearbox", "Exhaust",
+  "Radiator", "Radiator Fan", "Brake Caliper", "Brake Disc", "Suspension Arm",
+  "Battery", "Seat", "Infotainment Screen", "Engine", "Gearbox", "Exhaust",
 ];

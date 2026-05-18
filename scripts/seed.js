@@ -3,6 +3,7 @@
  * Run: cd node-api && npm run seed
  */
 const path = require("path");
+const fs = require("fs");
 const { createRequire } = require("module");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -51,6 +52,56 @@ const SELLERS = [
   },
 ];
 
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let quoted = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && quoted && next === '"') {
+      field += '"';
+      i += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      row.push(field);
+      field = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && next === "\n") i += 1;
+      row.push(field);
+      if (row.some((value) => value !== "")) rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += char;
+    }
+  }
+
+  if (field || row.length) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  const [headers, ...dataRows] = rows;
+  return dataRows.map((values) =>
+    Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""]))
+  );
+}
+
+function toNumber(value) {
+  if (value === "" || value === undefined || value === null) return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
+}
+
+function splitList(value) {
+  return value ? value.split("|").map((item) => item.trim()).filter(Boolean) : [];
+}
+
 async function seed() {
   await mongoose.connect(MONGO_URL);
   console.log("Connected");
@@ -61,104 +112,37 @@ async function seed() {
   const sellers = await Seller.insertMany(SELLERS);
   console.log(`Seeded ${sellers.length} sellers`);
 
-  const LISTINGS = [
-    {
-      seller_id: sellers[0]._id,
-      title: "Ford Fiesta Mk7 Left Headlight Assembly 2013-2017",
-      description: "Used left-side headlight assembly removed from a 2015 Ford Fiesta Mk7. Good working order. Minor surface marks only. Suitable for Fiesta Mk7 2013–2017 facelift models.",
-      part_category: "headlight",
-      make: "Ford",
-      model: "Fiesta",
-      generation: "Mk7",
-      year_from: 2013,
-      year_to: 2017,
-      fuel_type: "Any",
-      engine_size: "Any",
-      side: "left",
-      position: "front",
-      oem_number: "8A61-13W030",
-      condition: "Good",
-      condition_notes: "Minor cosmetic marks. Lens intact. All connectors present.",
-      price: 45,
-      image_url: "https://commons.wikimedia.org/wiki/Special:FilePath/Ford_Fiesta_MK6_144349.jpg?width=640",
-      donor_vehicle: { make: "Ford", model: "Fiesta", year: 2015 },
-      compatible_vehicles: ["Ford Fiesta 2013-2017"],
-      safety_warnings: ["Confirm connector type before purchase", "Check facelift/non-facelift variant"],
-      trust_score: 0.84,
-      listing_score: 0.82,
+  const csvPath = path.join(repoRoot, "data", "compatibility.csv");
+  const LISTINGS = parseCsv(fs.readFileSync(csvPath, "utf8")).map((row) => {
+    const seller = sellers[toNumber(row.seller_index) ?? 0] || sellers[0];
+    const donorYear = toNumber(row.donor_year);
+    return {
+      seller_id: seller._id,
+      title: row.title,
+      description: row.description,
+      part_category: row.part_category,
+      make: row.make,
+      model: row.model,
+      generation: row.generation,
+      year_from: toNumber(row.year_from),
+      year_to: toNumber(row.year_to),
+      fuel_type: row.fuel_type || "Any",
+      engine_size: row.engine_size || "Any",
+      side: row.side,
+      position: row.position,
+      oem_number: row.oem_number,
+      condition: row.condition,
+      condition_notes: row.condition_notes,
+      price: toNumber(row.price),
+      image_url: row.image_url,
+      donor_vehicle: row.make && row.model ? { make: row.make, model: row.model, year: donorYear } : undefined,
+      compatible_vehicles: splitList(row.compatible_vehicles),
+      safety_warnings: splitList(row.safety_warnings),
+      trust_score: toNumber(row.trust_score),
+      listing_score: toNumber(row.listing_score),
       status: "active",
-    },
-    {
-      seller_id: sellers[0]._id,
-      title: "VW Golf Mk7 GTI Front Left Brake Caliper 2013-2019",
-      description: "Used front left brake caliper removed from a 2017 VW Golf Mk7 GTI 2.0 TSI. Piston moves freely. Light surface rust on bracket. Compatible with Golf Mk6/7, Audi A3 8V, Seat Leon Mk3.",
-      part_category: "caliper",
-      make: "Volkswagen",
-      model: "Golf",
-      generation: "Mk7",
-      year_from: 2013,
-      year_to: 2019,
-      fuel_type: "Any",
-      engine_size: "Any",
-      side: "left",
-      position: "front",
-      oem_number: "1K0615423N",
-      condition: "Good",
-      condition_notes: "Surface rust on bracket only. Piston intact and moves freely.",
-      price: 55,
-      image_url: "https://commons.wikimedia.org/wiki/Special:FilePath/Brake_calipers.jpg?width=640",
-      donor_vehicle: { make: "Volkswagen", model: "Golf", year: 2017 },
-      compatible_vehicles: ["VW Golf Mk6 2008-2012", "VW Golf Mk7 2013-2019", "Audi A3 8V 2012-2020", "Seat Leon Mk3 2012-2020"],
-      safety_warnings: ["Safety-critical part — have inspected by a qualified mechanic before fitting"],
-      trust_score: 0.86,
-      listing_score: 0.88,
-      status: "active",
-    },
-    {
-      seller_id: sellers[1]._id,
-      title: "Ford Focus Mk3 Front Bumper 2011-2014",
-      description: "Used front bumper from a 2013 Ford Focus Mk3. Slight scuff on lower lip. No cracks. All mounting tabs intact. Needs a respray.",
-      part_category: "bumper",
-      make: "Ford",
-      model: "Focus",
-      generation: "Mk3",
-      year_from: 2011,
-      year_to: 2014,
-      fuel_type: "Any",
-      engine_size: "Any",
-      side: "front",
-      position: "front",
-      condition: "Fair",
-      condition_notes: "Scuff on lower lip. Will need respray. Structure intact.",
-      price: 30,
-      image_url: "https://commons.wikimedia.org/wiki/Special:FilePath/Front_bumper_oldtimer_car.jpg?width=640",
-      donor_vehicle: { make: "Ford", model: "Focus", year: 2013 },
-      compatible_vehicles: ["Ford Focus 2011-2014"],
-      safety_warnings: [],
-      trust_score: 0.62,
-      listing_score: 0.70,
-      status: "active",
-    },
-    {
-      seller_id: sellers[2]._id,
-      title: "Car Headlight — Unknown Make",
-      description: "Headlight from my old car. Not sure exactly which model it fits. Selling as spares.",
-      part_category: "headlight",
-      make: "",
-      model: "",
-      year_from: null,
-      year_to: null,
-      condition: "Unknown",
-      condition_notes: "Sold as seen.",
-      price: 10,
-      image_url: "https://commons.wikimedia.org/wiki/Special:FilePath/Close-up_of_damaged_headlight_and_grill_on_automobile.jpg?width=640",
-      compatible_vehicles: [],
-      safety_warnings: ["Compatibility unverified — confirm with seller before purchase"],
-      trust_score: 0.28,
-      listing_score: 0.22,
-      status: "active",
-    },
-  ];
+    };
+  });
 
   const listings = await Inventory.insertMany(LISTINGS);
   console.log(`Seeded ${listings.length} listings`);

@@ -12,6 +12,7 @@ interface Vehicle {
   model: string;
   year: number | null;
   fuel_type: string;
+  engine_size?: string;
 }
 
 interface Fitment {
@@ -50,6 +51,7 @@ const STARTERS = [
 function vehicleLabel(vehicle: Vehicle | null) {
   if (!vehicle) return "No vehicle selected";
   return [vehicle.year, vehicle.make, vehicle.model, vehicle.fuel_type !== "Any" ? vehicle.fuel_type : null]
+    .concat(vehicle.engine_size && vehicle.engine_size !== "Any" ? [vehicle.engine_size] : [])
     .filter(Boolean)
     .join(" ");
 }

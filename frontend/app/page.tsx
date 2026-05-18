@@ -20,10 +20,11 @@ export default function Home() {
     router.push(`/buyer?q=${encodeURIComponent(trimmed)}`);
   };
 
-  const handleVehicle = (v: { make: string; model: string; year: number | null; fuel_type: string }) => {
+  const handleVehicle = (v: { make: string; model: string; year: number | null; fuel_type: string; engine_size?: string }) => {
     const params = new URLSearchParams({ make: v.make, model: v.model });
     if (v.year) params.set("year", String(v.year));
     if (v.fuel_type && v.fuel_type !== "Any") params.set("fuel", v.fuel_type);
+    if (v.engine_size && v.engine_size !== "Any") params.set("engine", v.engine_size);
     router.push(`/buyer?${params.toString()}`);
   };
 

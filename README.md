@@ -141,8 +141,10 @@ npm run dev
 
 ## Vehicle Data Strategy
 
-- Structured local JSON dataset (18 makes/models, 2000–2020)
-- Manual vehicle selector as primary input (no API dependency)
+- GOV.UK vehicle licensing statistics data files are the source model for selector fields: `BodyType`, `Make`, `GenModel`, `Model`, `Fuel`, `YearFirstUsed`, `YearManufacture`, and engine-size bands.
+- `data/uk_vehicle_selector.json` keeps a UK-relevant selector sample covering common makes/models, year ranges, fuel choices, engine-size bands, and vehicle-card image URLs.
+- `data/compatibility.csv` is our own demo fitment layer with 25 manually curated part rows. GOV.UK does not provide part compatibility, so this CSV is deliberately separate.
+- Manual vehicle selector is the primary input (no live API dependency)
 - Mock DVLA responses for 6 demo registrations (AB12CDE, WN67DSO, etc.)
 - DVLA VES API integration ready — key pending approval
 
@@ -154,12 +156,18 @@ npm run dev
 
 ## Demo Image Sources
 
-Seeded listing images are loaded from Wikimedia Commons for demo/testing:
+Seeded listing images and seller demo photo samples are loaded from safe stock/public image URLs for demo/testing:
 
 - Ford Fiesta image: [Ford Fiesta MK6 144349](https://commons.wikimedia.org/wiki/File:Ford_Fiesta_MK6_144349.jpg)
 - Brake caliper image: [Brake calipers](https://commons.wikimedia.org/wiki/File:Brake_calipers.jpg)
 - Front bumper image: [Front bumper oldtimer car](https://commons.wikimedia.org/wiki/File:Front_bumper_oldtimer_car.jpg)
 - Damaged/unknown headlight image: [Close-up of damaged headlight and grill on automobile](https://commons.wikimedia.org/wiki/File:Close-up_of_damaged_headlight_and_grill_on_automobile.jpg)
+
+The seller page also includes a "Demo part photos" gallery so the upload listing-generation flow can be tested without needing local photos.
+
+## External Data References
+
+- GOV.UK Vehicle licensing statistics data files: https://www.gov.uk/government/statistical-data-sets/vehicle-licensing-statistics-data-files
 
 ## Ethical Design
 

@@ -4,12 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import VehicleSelector from "@/components/VehicleSelector";
 import { generateListing } from "@/lib/api";
+import { DEMO_PART_PHOTOS } from "@/lib/demoPartPhotos";
 
 interface Vehicle {
   make: string;
   model: string;
   year: number | null;
   fuel_type: string;
+  engine_size?: string;
 }
 interface GeneratedListing {
   title?: string;
@@ -43,6 +45,7 @@ interface GenerateResult {
 export default function SellerPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [demoPhotoUrl, setDemoPhotoUrl] = useState<string | null>(null);
   const [partNumber, setPartNumber] = useState("");
   const [donorVehicle, setDonorVehicle] = useState<Vehicle | null>(null);
   const [result, setResult] = useState<GenerateResult | null>(null);
@@ -52,7 +55,16 @@ export default function SellerPage() {
 
   const handleFile = (f: File) => {
     setFile(f);
+    setDemoPhotoUrl(null);
     setPreview(URL.createObjectURL(f));
+    setResult(null);
+  };
+
+  const handleDemoPhoto = (photo: { label: string; partNumber: string; url: string }) => {
+    setFile(null);
+    setDemoPhotoUrl(photo.url);
+    setPreview(photo.url);
+    setPartNumber(photo.partNumber);
     setResult(null);
   };
 
@@ -63,18 +75,26 @@ export default function SellerPage() {
   };
 
   const handleGenerate = async () => {
-    if (!file) return;
+    if (!file && !demoPhotoUrl) return;
     setLoading(true);
     setError("");
     try {
+      let uploadFile = file;
+      if (!uploadFile && demoPhotoUrl) {
+        const response = await fetch(demoPhotoUrl);
+        const blob = await response.blob();
+        uploadFile = new File([blob], "demo-part-photo.jpg", { type: blob.type || "image/jpeg" });
+      }
+      if (!uploadFile) throw new Error("No image selected");
+
       const form = new FormData();
-      form.append("image", file);
+      form.append("image", uploadFile);
       form.append("part_number", partNumber);
       form.append("donor_vehicle", JSON.stringify(donorVehicle ?? {}));
       const data = await generateListing(form);
       setResult(data);
     } catch {
-      setError("Generation failed. Check the AI service is running.");
+      setError("Generation failed. Check the AI service is running, or upload a local image if the demo image host blocks download.");
     } finally {
       setLoading(false);
     }
@@ -112,6 +132,26 @@ export default function SellerPage() {
           )}
         </div>
 
+        <section className="bg-gray-900 rounded-xl p-5 border border-gray-800 space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-300">Demo part photos</h2>
+            <p className="text-xs text-gray-500 mt-1">Use a safe stock sample to test the upload flow without hunting for a file.</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
+            {DEMO_PART_PHOTOS.map((photo) => (
+              <button
+                key={`${photo.label}-${photo.partNumber}`}
+                type="button"
+                onClick={() => handleDemoPhoto(photo)}
+                className={`h-24 rounded-lg border bg-gray-800 bg-cover bg-center text-left overflow-hidden transition ${demoPhotoUrl === photo.url ? "border-blue-400" : "border-gray-700 hover:border-blue-500"}`}
+                style={{ backgroundImage: `linear-gradient(180deg, rgba(3,7,18,.05), rgba(3,7,18,.88)), url(${photo.url})` }}
+              >
+                <span className="flex h-full items-end p-2 text-xs font-semibold text-white">{photo.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* Part number + donor vehicle */}
         <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-4">
           <div>
@@ -141,7 +181,7 @@ export default function SellerPage() {
 
         <button
           onClick={handleGenerate}
-          disabled={!file || loading}
+          disabled={(!file && !demoPhotoUrl) || loading}
           className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition text-lg"
         >
           {loading ? "Generating listing…" : "Generate Listing with AI"}

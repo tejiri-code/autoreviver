@@ -8,7 +8,7 @@ import TrustBadge from "@/components/TrustBadge";
 import { searchParts } from "@/lib/api";
 import { PART_CATEGORIES } from "@/lib/vehicles";
 
-interface Vehicle { make: string; model: string; year: number | null; fuel_type: string }
+interface Vehicle { make: string; model: string; year: number | null; fuel_type: string; engine_size?: string }
 interface SearchIntent {
   part_category?: string | null;
   side?: string | null;
@@ -52,9 +52,10 @@ function BuyerContent() {
     const model = searchParams.get("model") ?? "";
     const year = searchParams.get("year");
     const fuel = searchParams.get("fuel") ?? "Any";
+    const engine = searchParams.get("engine") ?? "Any";
 
     return make && model
-      ? { make, model, year: year ? Number(year) : null, fuel_type: fuel }
+      ? { make, model, year: year ? Number(year) : null, fuel_type: fuel, engine_size: engine }
       : null;
   })();
 
@@ -97,6 +98,7 @@ function BuyerContent() {
 
   const vehicleLabel = vehicle
     ? [vehicle.year, vehicle.make, vehicle.model, vehicle.fuel_type !== "Any" ? vehicle.fuel_type : null]
+        .concat(vehicle.engine_size && vehicle.engine_size !== "Any" ? [vehicle.engine_size] : [])
         .filter(Boolean).join(" ")
     : null;
 
