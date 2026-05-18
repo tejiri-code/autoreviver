@@ -1,10 +1,16 @@
 /**
  * Seed MongoDB with demo sellers and inventory listings.
- * Run: node scripts/seed.js
+ * Run: cd node-api && npm run seed
  */
-require("dotenv").config({ path: ".env" });
-const mongoose = require("mongoose");
-const { Seller, Inventory } = require("./node-api/src/db/models");
+const path = require("path");
+const { createRequire } = require("module");
+
+const repoRoot = path.resolve(__dirname, "..");
+const apiRequire = createRequire(path.join(repoRoot, "node-api", "package.json"));
+
+apiRequire("dotenv").config({ path: path.join(repoRoot, ".env") });
+const mongoose = apiRequire("mongoose");
+const { Seller, Inventory } = require(path.join(repoRoot, "node-api", "src", "db", "models"));
 
 const MONGO_URL = process.env.MONGO_URL_LOCAL || "mongodb://autoreviver:autoreviver@localhost:27017/autoreviver?authSource=admin";
 

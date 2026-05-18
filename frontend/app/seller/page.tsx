@@ -127,7 +127,7 @@ function ListingResult({ result }: { result: any }) {
     <div className="space-y-4">
       {/* Authenticity checks */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-2">
-        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Authenticity Checks</h3>
+        <h3 className="text-sm font-semibold text-gray-300">Authenticity Checks</h3>
         <Check ok={duplicate_check?.flag === "CLEAN"} label={duplicate_check?.flag === "CLEAN" ? "No duplicate listings detected" : `Duplicate detected — ${duplicate_check.flag}`} />
         <Check ok label="Image fingerprint stored (pHash + dHash + aHash)" />
         {trust && <Check ok={trust.risk_level === "low"} label={`Trust level: ${trust.risk_level} (${Math.round((trust.trust_score ?? 0) * 100)}/100)`} />}

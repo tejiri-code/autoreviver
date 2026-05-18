@@ -42,7 +42,7 @@ export default function BuyerPage() {
       <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
         {/* Step 1 — Vehicle */}
         <section className="bg-gray-900 rounded-xl p-6 border border-gray-800">
-          <h2 className="font-semibold mb-4 text-sm text-gray-300 uppercase tracking-wider">
+          <h2 className="font-semibold mb-4 text-sm text-gray-300">
             Step 1 — Your Vehicle
           </h2>
           {vehicle ? (
@@ -60,7 +60,7 @@ export default function BuyerPage() {
 
         {/* Step 2 — Search */}
         <section className="bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-4">
-          <h2 className="font-semibold mb-1 text-sm text-gray-300 uppercase tracking-wider">
+          <h2 className="font-semibold mb-1 text-sm text-gray-300">
             Step 2 — What part do you need?
           </h2>
           <div className="flex gap-2">

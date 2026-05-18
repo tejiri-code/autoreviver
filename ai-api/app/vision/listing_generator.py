@@ -3,8 +3,6 @@ import base64
 import requests
 import json
 import re
-from PIL import Image
-import imagehash
 import io
 
 HF_API_KEY = os.getenv("HF_API_KEY", "")
@@ -117,6 +115,9 @@ def _fallback_listing(caption: str, part_number: str, donor_vehicle: dict, donor
 
 
 def hash_image(image_bytes: bytes) -> dict:
+    from PIL import Image
+    import imagehash
+
     img = Image.open(io.BytesIO(image_bytes))
     return {
         "phash": str(imagehash.phash(img)),

@@ -13,9 +13,6 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-8">
         <div className="space-y-4 max-w-2xl">
-          <div className="inline-block bg-blue-600/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full border border-blue-600/30">
-            AI · Fitment · Trust
-          </div>
           <h1 className="text-5xl font-bold tracking-tight">
             Find parts that <span className="text-blue-400">actually fit.</span>
           </h1>

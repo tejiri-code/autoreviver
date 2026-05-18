@@ -7,8 +7,6 @@ import os
 import re
 import requests
 import json
-import chromadb
-from sentence_transformers import SentenceTransformer
 
 HF_API_KEY = os.getenv("HF_API_KEY", "")
 HF_TEXT_MODEL = os.getenv("HF_TEXT_MODEL", "mistralai/Mistral-7B-Instruct-v0.3")
@@ -22,6 +20,8 @@ _collection = None
 def get_embed_model():
     global _embed_model
     if _embed_model is None:
+        from sentence_transformers import SentenceTransformer
+
         _embed_model = SentenceTransformer("all-MiniLM-L6-v2")
     return _embed_model
 
@@ -29,6 +29,8 @@ def get_embed_model():
 def get_collection():
     global _chroma_client, _collection
     if _chroma_client is None:
+        import chromadb
+
         _chroma_client = chromadb.PersistentClient(path="/app/chroma")
         _collection = _chroma_client.get_or_create_collection("listings")
     return _collection

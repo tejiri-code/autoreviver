@@ -42,14 +42,15 @@ MongoDB + ChromaDB (vector search)
 ### Prerequisites
 - Docker + Docker Compose
 - Node.js 20+
-- Python 3.11+
+- Python 3.11 or 3.12
 
 ### 1. Set up environment
 
 ```bash
 cp .env.example .env
-# Add your HuggingFace API key (free at huggingface.co/settings/tokens)
 ```
+
+Add your Hugging Face API key to `.env` (`HF_API_KEY`).
 
 ### 2. Start services
 
@@ -61,30 +62,46 @@ docker compose up --build
 
 ```bash
 cd node-api && npm install
-node ../scripts/seed.js
+npm run seed
 ```
 
 ### 4. Development (without Docker)
 
+Run these commands from the repo root (`/Users/evelyn/autoreviver`). If you are currently in `node-api`, run `cd ..` first. Use a separate terminal for each service.
+
 **AI API:**
 ```bash
 cd ai-api
+python3.12 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
+
+If your machine is low on disk space, install the lightweight API dependencies first:
+
+```bash
+cd ai-api
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-lite.txt
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+The lightweight install starts health, fitment, and trust endpoints. Image hashing and semantic vector search still require the full `requirements.txt`.
 
 **Node API:**
 ```bash
 cd node-api
 npm install
-npm run dev   # port 4000
+npm run dev
 ```
 
 **Frontend:**
 ```bash
 cd frontend
 npm install
-npm run dev   # port 3000
+npm run dev
 ```
 
 ### URLs
