@@ -157,13 +157,17 @@ export default function SellerPage() {
 function ListingResult({ result }: { result: GenerateResult }) {
   const { item, listing_score, duplicate_check, trust } = result;
   const listing = item ?? result.listing;
+  const duplicateFlag = duplicate_check?.flag ?? "CLEAN";
+  const compatibleVehicles = listing?.compatible_vehicles ?? [];
+  const missingItems = listing_score?.missing ?? [];
+  const safetyWarnings = listing?.safety_warnings ?? [];
 
   return (
     <div className="space-y-4">
       {/* Authenticity checks */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-2">
         <h3 className="text-sm font-semibold text-gray-300">Authenticity Checks</h3>
-        <Check ok={duplicate_check?.flag === "CLEAN"} label={duplicate_check?.flag === "CLEAN" ? "No duplicate listings detected" : `Duplicate detected — ${duplicate_check.flag}`} />
+        <Check ok={duplicateFlag === "CLEAN"} label={duplicateFlag === "CLEAN" ? "No duplicate listings detected" : `Duplicate detected — ${duplicateFlag}`} />
         <Check ok label="Image fingerprint stored (pHash + dHash + aHash)" />
         {trust && <Check ok={trust.risk_level === "low"} label={`Trust level: ${trust.risk_level} (${Math.round((trust.trust_score ?? 0) * 100)}/100)`} />}
       </div>
@@ -188,32 +192,32 @@ function ListingResult({ result }: { result: GenerateResult }) {
           <p className="text-xs text-gray-400 italic">{listing.condition_notes}</p>
         )}
 
-        {listing?.compatible_vehicles?.length > 0 && (
+        {compatibleVehicles.length > 0 && (
           <div>
             <p className="text-xs text-gray-400 font-semibold mb-1">Compatible vehicles</p>
             <div className="flex flex-wrap gap-1">
-              {listing.compatible_vehicles.map((v: string) => (
+              {compatibleVehicles.map((v) => (
                 <span key={v} className="text-xs bg-blue-600/20 text-blue-400 border border-blue-600/30 px-2 py-0.5 rounded">{v}</span>
               ))}
             </div>
           </div>
         )}
 
-        {listing_score?.missing?.length > 0 && (
+        {missingItems.length > 0 && (
           <div>
             <p className="text-xs text-yellow-400 font-semibold mb-1">To improve your listing:</p>
             <ul className="space-y-1">
-              {listing_score.missing.map((m: string) => (
+              {missingItems.map((m) => (
                 <li key={m} className="text-xs text-yellow-300 flex gap-2"><span>→</span>{m}</li>
               ))}
             </ul>
           </div>
         )}
 
-        {listing?.safety_warnings?.length > 0 && (
+        {safetyWarnings.length > 0 && (
           <div className="bg-red-900/20 border border-red-700/40 rounded-lg p-3">
             <p className="text-xs text-red-400 font-semibold mb-1">Safety notices</p>
-            {listing.safety_warnings.map((w: string) => (
+            {safetyWarnings.map((w) => (
               <p key={w} className="text-xs text-red-300">{w}</p>
             ))}
           </div>

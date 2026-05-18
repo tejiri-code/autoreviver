@@ -1,11 +1,92 @@
 const router = require("express").Router();
 const axios = require("axios");
+const fs = require("fs");
 const multer = require("multer");
 const FormData = require("form-data");
 const { Inventory, Seller } = require("../db/models");
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
-const AI_URL = process.env.AI_API_URL || process.env.AI_API_URL_LOCAL || "http://localhost:8000";
+const isDocker = fs.existsSync("/.dockerenv");
+const AI_URL = isDocker
+  ? process.env.AI_API_URL || process.env.AI_API_URL_LOCAL || "http://localhost:8000"
+  : process.env.AI_API_URL_LOCAL || process.env.AI_API_URL || "http://localhost:8000";
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function localIntent(query = "") {
+  const q = query.toLowerCase();
+  const sides = {
+    left: "left",
+    right: "right",
+    front: "front",
+    rear: "rear",
+    passenger: "left",
+    driver: "right",
+    offside: "right",
+    nearside: "left",
+  };
+  const makes = ["ford", "vw", "volkswagen", "vauxhall", "bmw", "audi", "toyota", "nissan", "honda", "mercedes", "mini", "seat", "skoda", "hyundai", "kia"];
+  const parts = ["headlight", "bumper", "wing mirror", "door", "bonnet", "caliper", "alternator", "radiator", "starter", "seat", "wheel", "tyre", "sensor"];
+  const intent = { part_category: null, make: null, model: null, year: null, side: null };
+
+  intent.make = makes.find((make) => q.includes(make)) || null;
+  if (intent.make) intent.make = intent.make === "vw" ? "Volkswagen" : intent.make[0].toUpperCase() + intent.make.slice(1);
+  intent.part_category = parts.find((part) => q.includes(part)) || null;
+
+  const side = Object.keys(sides).find((keyword) => q.includes(keyword));
+  if (side) intent.side = sides[side];
+
+  const year = query.match(/\b(19|20)\d{2}\b/);
+  if (year) intent.year = Number(year[0]);
+
+  return intent;
+}
+
+function buildInventoryFilter(intent, query) {
+  const filter = { status: "active" };
+  if (intent.part_category) filter.part_category = new RegExp(escapeRegex(intent.part_category), "i");
+  if (intent.make) filter.make = new RegExp(escapeRegex(intent.make), "i");
+  if (intent.model) filter.model = new RegExp(escapeRegex(intent.model), "i");
+  if (intent.side) filter.side = new RegExp(escapeRegex(intent.side), "i");
+
+  if (!intent.part_category && query) {
+    const terms = query
+      .split(/\s+/)
+      .map((term) => term.trim())
+      .filter((term) => term.length > 2)
+      .slice(0, 4);
+    if (terms.length) {
+      filter.$or = terms.flatMap((term) => {
+        const re = new RegExp(escapeRegex(term), "i");
+        return [{ title: re }, { description: re }, { part_category: re }, { make: re }, { model: re }];
+      });
+    }
+  }
+
+  return filter;
+}
+
+async function enrichWithFitment(listings, vehicle, intent) {
+  const intentValues = Object.fromEntries(
+    Object.entries(intent || {}).filter(([, value]) => value !== null && value !== undefined && value !== "")
+  );
+
+  return Promise.all(
+    listings.map(async (listing) => {
+      let fitment = null;
+      if (vehicle && Object.keys(vehicle).length > 0) {
+        try {
+          const fitResp = await axios.post(`${AI_URL}/fitment/check`, {
+            buyer_vehicle: { ...vehicle, ...intentValues },
+            part_listing: listing.toObject(),
+          });
+          fitment = fitResp.data;
+        } catch {}
+      }
+      return { ...listing.toObject(), fitment };
+    })
+  );
+}
 
 // GET all listings (with optional filters)
 router.get("/", async (req, res) => {
@@ -88,29 +169,27 @@ router.post("/generate", upload.single("image"), async (req, res) => {
 router.post("/search", async (req, res) => {
   try {
     const { query, vehicle } = req.body;
-    const searchResp = await axios.post(`${AI_URL}/search/semantic`, { query, vehicle });
-    const { intent, results } = searchResp.data;
+    let intent;
+    let listings;
 
-    // Fetch full listings from DB
-    const ids = results.map((r) => r.listing_id).filter(Boolean);
-    const listings = await Inventory.find({ _id: { $in: ids }, status: "active" });
+    try {
+      const searchResp = await axios.post(`${AI_URL}/search/semantic`, { query, vehicle });
+      const { intent: aiIntent, results } = searchResp.data;
+      intent = aiIntent || localIntent(query);
 
-    // Score fitment for each
-    const enriched = await Promise.all(
-      listings.map(async (listing) => {
-        let fitment = null;
-        if (vehicle && Object.keys(vehicle).length > 0) {
-          try {
-            const fitResp = await axios.post(`${AI_URL}/fitment/check`, {
-              buyer_vehicle: { ...vehicle, ...intent },
-              part_listing: listing.toObject(),
-            });
-            fitment = fitResp.data;
-          } catch {}
-        }
-        return { ...listing.toObject(), fitment };
-      })
-    );
+      const ids = results.map((r) => r.listing_id).filter(Boolean);
+      listings = await Inventory.find({ _id: { $in: ids }, status: "active" });
+    } catch {
+      try {
+        const intentResp = await axios.post(`${AI_URL}/search/intent`, { query });
+        intent = intentResp.data || localIntent(query);
+      } catch {
+        intent = localIntent(query);
+      }
+      listings = await Inventory.find(buildInventoryFilter(intent, query)).limit(20).sort({ listing_score: -1, created_at: -1 });
+    }
+
+    const enriched = await enrichWithFitment(listings, vehicle, intent);
 
     res.json({ intent, results: enriched, query });
   } catch (err) {
