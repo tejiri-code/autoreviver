@@ -11,11 +11,12 @@ interface Vehicle {
 
 interface Props {
   onSelect: (v: Vehicle) => void;
+  buttonLabel?: string;
 }
 
 const FUEL_TYPES = ["Petrol", "Diesel", "Electric", "Hybrid", "Any"];
 
-export default function VehicleSelector({ onSelect }: Props) {
+export default function VehicleSelector({ onSelect, buttonLabel = "Confirm Vehicle" }: Props) {
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState<number | null>(null);
@@ -70,7 +71,7 @@ export default function VehicleSelector({ onSelect }: Props) {
         disabled={!make || !model}
         className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold py-2 rounded-lg transition"
       >
-        Confirm Vehicle
+        {buttonLabel}
       </button>
     </div>
   );

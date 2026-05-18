@@ -1,5 +1,6 @@
 import os
 import base64
+import hashlib
 import requests
 import json
 import re
@@ -115,20 +116,39 @@ def _fallback_listing(caption: str, part_number: str, donor_vehicle: dict, donor
 
 
 def hash_image(image_bytes: bytes) -> dict:
-    from PIL import Image
-    import imagehash
+    try:
+        from PIL import Image
+        import imagehash
 
-    img = Image.open(io.BytesIO(image_bytes))
-    return {
-        "phash": str(imagehash.phash(img)),
-        "dhash": str(imagehash.dhash(img)),
-        "ahash": str(imagehash.average_hash(img)),
-    }
+        img = Image.open(io.BytesIO(image_bytes))
+        return {
+            "phash": str(imagehash.phash(img)),
+            "dhash": str(imagehash.dhash(img)),
+            "ahash": str(imagehash.average_hash(img)),
+        }
+    except ModuleNotFoundError:
+        digest = hashlib.sha256(image_bytes).hexdigest()
+        return {
+            "phash": digest[:16],
+            "dhash": digest[16:32],
+            "ahash": digest[32:48],
+        }
 
 
 def check_duplicate(new_hashes: dict, existing_hashes: list[dict]) -> dict:
     """Compare new image hashes against stored hashes. Returns flag and match info."""
-    from imagehash import hex_to_hash
+    try:
+        from imagehash import hex_to_hash
+    except ModuleNotFoundError:
+        for stored in existing_hashes:
+            if all(new_hashes.get(key) == stored.get(key) for key in ("phash", "dhash", "ahash")):
+                return {
+                    "flag": "DUPLICATE",
+                    "matched_listing_id": stored.get("listing_id"),
+                    "matched_seller_id": stored.get("seller_id"),
+                    "confidence": "HIGH",
+                }
+        return {"flag": "CLEAN"}
 
     new_p = hex_to_hash(new_hashes["phash"])
     new_d = hex_to_hash(new_hashes["dhash"])

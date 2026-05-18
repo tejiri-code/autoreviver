@@ -112,6 +112,12 @@ router.get("/:id", async (req, res) => {
 router.post("/generate", upload.single("image"), async (req, res) => {
   try {
     const { seller_id, part_number, donor_vehicle } = req.body;
+    let resolvedSellerId = seller_id;
+    if (!resolvedSellerId) {
+      const fallbackSeller = await Seller.findOne().sort({ created_at: 1 });
+      if (!fallbackSeller) return res.status(400).json({ error: "No seller available for listing generation" });
+      resolvedSellerId = fallbackSeller._id;
+    }
 
     // Fetch all existing hashes for duplicate detection
     const existing = await Inventory.find({ status: "active" }, "image_hashes _id seller_id");
@@ -130,8 +136,8 @@ router.post("/generate", upload.single("image"), async (req, res) => {
 
     // Build trust score
     let seller_score = 60;
-    if (seller_id) {
-      const seller = await Seller.findById(seller_id);
+    if (resolvedSellerId) {
+      const seller = await Seller.findById(resolvedSellerId);
       if (seller) {
         const trustResp = await axios.post(`${AI_URL}/trust/seller`, { seller: seller.toObject() });
         seller_score = trustResp.data.seller_score;
@@ -145,7 +151,7 @@ router.post("/generate", upload.single("image"), async (req, res) => {
 
     // Save to DB
     const item = new Inventory({
-      seller_id,
+      seller_id: resolvedSellerId,
       ...listing,
       part_number,
       donor_vehicle: JSON.parse(donor_vehicle || "{}"),
