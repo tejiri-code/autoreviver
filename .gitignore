@@ -1,5 +1,7 @@
 node_modules/
 .venv/
+ai-api/.cache/
+ai-api/.chroma/
 .env
 .next/
 __pycache__/

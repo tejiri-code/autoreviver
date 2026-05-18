@@ -19,6 +19,24 @@ AutoReviver combines structured fitment matching, AI-generated listings, semanti
 - **Intelligent Search** — natural language → structured intent → semantic vector search
 - **Trust & Anti-Scam** — perceptual image hashing (pHash/dHash/aHash) detects duplicate photos and stolen images; seller reputation scoring
 
+## Sub-Challenge Coverage
+
+### Part Compatibility Verification
+
+AutoReviver lets buyers select or look up their vehicle, then compares it against listing metadata such as make, model, generation, year range, fuel type, part category, side, and position. The fitment engine returns a confidence score, a buyer-readable status, reasons it fits, warnings, and a recommended action. If sellers provide incomplete data, the system still gives a cautious compatibility judgement and highlights what must be verified before purchase.
+
+### Smart Listing Generation
+
+Sellers can upload a part photo, part number, and donor vehicle. The AI service captions the image, generates a professional listing, suggests compatibility, writes condition notes, estimates a price range, and lists missing information. The workflow also computes image fingerprints and a listing completeness score before saving the result.
+
+### Intelligent Search & Discovery
+
+Buyers can search in natural language, such as "left headlight for Ford Fiesta". The AI service extracts structured intent, embeds the query with `sentence-transformers`, searches ChromaDB for semantic matches, and returns inventory results enriched with fitment analysis. If the vector store is empty or unavailable, the Node API falls back to deterministic database search so discovery still works during demos.
+
+### Trust & Anti-Scam Features
+
+AutoReviver scores sellers using verification and dispute signals, scores listings using completeness and duplicate-image risk, and uses perceptual hashing to catch reused or stolen part photos. The trust layer is designed to extend into Companies House, VAT/HMRC checks, escrow, and stronger provenance signals without changing the buyer or seller workflow.
+
 ## Architecture
 
 ```

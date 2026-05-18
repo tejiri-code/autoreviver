@@ -7,6 +7,14 @@ import os
 import re
 import requests
 import json
+from pathlib import Path
+
+AI_API_ROOT = Path(__file__).resolve().parents[2]
+HF_CACHE_DIR = AI_API_ROOT / ".cache" / "huggingface"
+CHROMA_PATH = os.getenv("CHROMA_PATH") or ("/app/chroma" if os.path.exists("/.dockerenv") else str(AI_API_ROOT / ".chroma"))
+
+os.environ.setdefault("HF_HOME", str(HF_CACHE_DIR))
+os.environ.setdefault("TRANSFORMERS_CACHE", str(HF_CACHE_DIR))
 
 HF_API_KEY = os.getenv("HF_API_KEY", "")
 HF_TEXT_MODEL = os.getenv("HF_TEXT_MODEL", "mistralai/Mistral-7B-Instruct-v0.3")
@@ -31,7 +39,7 @@ def get_collection():
     if _chroma_client is None:
         import chromadb
 
-        _chroma_client = chromadb.PersistentClient(path="/app/chroma")
+        _chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
         _collection = _chroma_client.get_or_create_collection("listings")
     return _collection
 

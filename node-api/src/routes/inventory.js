@@ -184,7 +184,10 @@ router.post("/search", async (req, res) => {
       intent = aiIntent || localIntent(query);
 
       const ids = results.map((r) => r.listing_id).filter(Boolean);
+      if (!ids.length) throw new Error("No semantic results");
+
       listings = await Inventory.find({ _id: { $in: ids }, status: "active" });
+      if (!listings.length) throw new Error("Semantic results not found in inventory");
     } catch {
       try {
         const intentResp = await axios.post(`${AI_URL}/search/intent`, { query });
