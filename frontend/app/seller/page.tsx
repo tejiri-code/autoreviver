@@ -1,16 +1,51 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import VehicleSelector from "@/components/VehicleSelector";
-import TrustBadge from "@/components/TrustBadge";
 import { generateListing } from "@/lib/api";
+
+interface Vehicle {
+  make: string;
+  model: string;
+  year: number | null;
+  fuel_type: string;
+}
+interface GeneratedListing {
+  title?: string;
+  description?: string;
+  condition?: string;
+  condition_notes?: string;
+  compatible_vehicles?: string[];
+  suggested_price_gbp_min?: number;
+  suggested_price_gbp_max?: number;
+  safety_warnings?: string[];
+}
+interface ListingScore {
+  score?: number;
+  missing?: string[];
+}
+interface DuplicateCheck {
+  flag?: string;
+}
+interface TrustResult {
+  risk_level?: string;
+  trust_score?: number;
+}
+interface GenerateResult {
+  item?: GeneratedListing;
+  listing?: GeneratedListing;
+  listing_score?: ListingScore;
+  duplicate_check?: DuplicateCheck;
+  trust?: TrustResult;
+}
 
 export default function SellerPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [partNumber, setPartNumber] = useState("");
-  const [donorVehicle, setDonorVehicle] = useState<any>(null);
-  const [result, setResult] = useState<any>(null);
+  const [donorVehicle, setDonorVehicle] = useState<Vehicle | null>(null);
+  const [result, setResult] = useState<GenerateResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +73,7 @@ export default function SellerPage() {
       form.append("donor_vehicle", JSON.stringify(donorVehicle ?? {}));
       const data = await generateListing(form);
       setResult(data);
-    } catch (e: any) {
+    } catch {
       setError("Generation failed. Check the AI service is running.");
     } finally {
       setLoading(false);
@@ -67,7 +102,7 @@ export default function SellerPage() {
         >
           <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
           {preview ? (
-            <img src={preview} alt="Part preview" className="max-h-48 mx-auto rounded-lg object-contain" />
+            <Image src={preview} alt="Part preview" width={320} height={192} className="max-h-48 mx-auto rounded-lg object-contain" unoptimized />
           ) : (
             <div className="text-gray-500">
               <div className="text-3xl mb-2">📷</div>
@@ -119,7 +154,7 @@ export default function SellerPage() {
   );
 }
 
-function ListingResult({ result }: { result: any }) {
+function ListingResult({ result }: { result: GenerateResult }) {
   const { item, listing_score, duplicate_check, trust } = result;
   const listing = item ?? result.listing;
 

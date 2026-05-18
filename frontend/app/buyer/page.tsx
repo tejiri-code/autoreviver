@@ -8,12 +8,35 @@ import { searchParts } from "@/lib/api";
 import { PART_CATEGORIES } from "@/lib/vehicles";
 
 interface Vehicle { make: string; model: string; year: number | null; fuel_type: string }
+interface SearchIntent {
+  part_category?: string | null;
+  side?: string | null;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+}
+interface Fitment {
+  fitment_status: string;
+  confidence: number;
+  reasons?: string[];
+  warnings?: string[];
+  recommended_action?: string;
+}
+interface Listing {
+  _id: string;
+  title?: string;
+  description?: string;
+  price?: number;
+  condition?: string;
+  trust_score?: number;
+  fitment?: Fitment | null;
+}
 
 export default function BuyerPage() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
-  const [intent, setIntent] = useState<any>(null);
+  const [results, setResults] = useState<Listing[]>([]);
+  const [intent, setIntent] = useState<SearchIntent | null>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -109,8 +132,8 @@ export default function BuyerPage() {
                 No listings found. Try a different search or browse all parts.
               </div>
             ) : (
-              results.map((item: any) => (
-                <ResultCard key={item._id} item={item} vehicle={vehicle} />
+              results.map((item) => (
+                <ResultCard key={item._id} item={item} />
               ))
             )}
           </section>
@@ -120,7 +143,7 @@ export default function BuyerPage() {
   );
 }
 
-function ResultCard({ item, vehicle }: { item: any; vehicle: Vehicle | null }) {
+function ResultCard({ item }: { item: Listing }) {
   const [expanded, setExpanded] = useState(false);
   const fitment = item.fitment;
   const trustScore = item.trust_score ?? 0.5;
@@ -153,21 +176,21 @@ function ResultCard({ item, vehicle }: { item: any; vehicle: Vehicle | null }) {
 
       {expanded && fitment && (
         <div className="border-t border-gray-800 px-5 py-4 bg-gray-950 space-y-3">
-          {fitment.reasons?.length > 0 && (
+          {(fitment.reasons?.length ?? 0) > 0 && (
             <div>
               <p className="text-xs text-gray-400 font-semibold mb-1">Why it fits</p>
               <ul className="space-y-1">
-                {fitment.reasons.map((r: string) => (
+                {(fitment.reasons ?? []).map((r) => (
                   <li key={r} className="text-xs text-green-400 flex gap-2"><span>✓</span>{r}</li>
                 ))}
               </ul>
             </div>
           )}
-          {fitment.warnings?.length > 0 && (
+          {(fitment.warnings?.length ?? 0) > 0 && (
             <div>
               <p className="text-xs text-gray-400 font-semibold mb-1">Check before buying</p>
               <ul className="space-y-1">
-                {fitment.warnings.map((w: string) => (
+                {(fitment.warnings ?? []).map((w) => (
                   <li key={w} className="text-xs text-yellow-400 flex gap-2"><span>⚠</span>{w}</li>
                 ))}
               </ul>

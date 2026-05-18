@@ -1,9 +1,8 @@
 interface Props {
   score: number; // 0–1
-  riskLevel?: string;
 }
 
-export default function TrustBadge({ score, riskLevel }: Props) {
+export default function TrustBadge({ score }: Props) {
   const pct = Math.round(score * 100);
   const color = pct >= 75 ? "text-green-400 border-green-600/40 bg-green-600/10"
     : pct >= 50 ? "text-yellow-400 border-yellow-600/40 bg-yellow-600/10"
